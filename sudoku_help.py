@@ -1,34 +1,63 @@
 #!/usr/bin/python
 
-from itertools import combinations
+"""
+sum solver:
+given a number of unique integer summands n
+and a sum
+show all possible solutions
+"""
+
 import sys
+from itertools import combinations
 
-if len(sys.argv) != 3:
-    print("Usage: python sudoku_help.py <N> <sum>")
-
-# Sudoku helper
 NUM_SUDOKU = 9
+SUDOKU_SET = set(range(1, NUM_SUDOKU + 1))
 
-def get_options(n, group_sum):
-    sudoku_set = set(range(1, NUM_SUDOKU + 1))
+class SumSolver():
+    def __init__(self):
+        self.solver = dict()  # {N: {sum: [options]}}
 
-    # dict: N -> dict: sum -> list
-    solver_dict = dict() # {N: {sum: [options]}}
-    for i in range(1, NUM_SUDOKU + 1):
-        if i not in solver_dict:
-            solver_dict[i] = dict()
-        # get all combinations of n=1 (e.g. n=9 gives [1, 2, 3, 4, 5, 6, 7, 8, 9])
-        combs = list(combinations(sudoku_set, i))
-        for comb in combs:
-            this_sum = sum(comb)
-            if this_sum not in solver_dict[i]:
-                solver_dict[i][this_sum] = [comb]
-            else:
-                solver_dict[i][this_sum].append(comb)
+       # loop through all possible n
+        for i in range(1, NUM_SUDOKU + 1):
+            if i not in self.solver:
+                self.solver[i] = dict()
+            combs = list(combinations(SUDOKU_SET, i))
+            for comb in combs:
+                this_sum = sum(comb)
+                if this_sum not in self.solver[i]:
+                    self.solver[i][this_sum] = [comb]
+                else:
+                    self.solver[i][this_sum].append(comb)
 
-    return solver_dict[n][group_sum]
+    # give a list of tuples of all combinations
+    def solve(self, n: int, group_sum):
+        return self.solver[n][group_sum]
 
-result = get_options(int(sys.argv[1]), int(sys.argv[2]))
+def main():
+    # print startup
+    print("you have now entered sudoku jones")
+    print("q to quit")
+    print()
 
-for tup in result:
-    print(tup)
+    solver = SumSolver()
+    print("solver ready")
+
+    while True:
+        print("n sum")
+        user_in = input()
+        if user_in == "q":
+            exit(0)
+
+        # strip on white space
+        user_in = user_in.split()
+        num_args = len(user_in)
+        if num_args == 2:
+            result = solver.solve(int(user_in[0]), int(user_in[1]))
+            for res in result:
+                print(res)
+        else:
+            print("try n sum,")
+            print("or q to quit")
+
+if __name__ == "__main__":
+    main()
