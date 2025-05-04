@@ -16,14 +16,15 @@ SUDOKU_SET = set(range(1, NUM_SUDOKU + 1))
 
 class SumSolver():
     def __init__(self):
-        self.last_solution = list()
         self.solver = dict()  # {N: {sum: [options]}}
+        self.prev_solution = list()
+        self.commons = set()
 
        # loop through all possible n
         for i in range(1, NUM_SUDOKU + 1):
             if i not in self.solver:
                 self.solver[i] = dict()
-            combs = list(combinations(SUDOKU_SET, i))
+            combs = set(combinations(SUDOKU_SET, i))
             for comb in combs:
                 this_sum = sum(comb)
                 if this_sum not in self.solver[i]:
@@ -32,16 +33,31 @@ class SumSolver():
                     self.solver[i][this_sum].append(comb)
 
     # give a list of tuples of all combinations
-    def solve(self, n: int, group_sum):
-        self.last_solution = self.solver[n][group_sum]
-        return self.last_solution
+    def solve(self, n: int, group_sum: int):
+        self.prev_solution = self.solver[n][group_sum]
+        return self.prev_solution
 
     def filter_solution(self, to_remove: int):
-        if not self.last_solution:
-           print("no solutions yet: please solve before filtering")
-        for sol in self.last_solution:
+        if not self.prev_solution:
+            print("no solutions yet: please solve before filtering")
+            return list()
+        for sol in self.prev_solution:
             if to_remove in sol:
-                self.last_solution.remove(sol)
+                self.prev_solution.remove(sol)
+        return self.prev_solution
+
+    def get_common(self):
+        if not self.prev_solution:
+            print("no solutions yet: please solve first")
+            return set()
+        if len(self.prev_solution) == 1:
+            # only one possible solution: do nothing
+            return set()
+        # first = set(self.prev_solution[0])
+        # self.commons = first.intersection([set(sol) for sol in self.prev_solution[1:]])
+        self.commons = set.intersection(*[set(sol) for sol in self.prev_solution])
+
+        return self.commons
 
 def main():
     # print startup
@@ -66,8 +82,12 @@ def main():
                 solver.filter_solution(int(user_in[1]))
             else:
                 solver.solve(int(user_in[0]), int(user_in[1]))
-            for sol in solver.last_solution:
+            for sol in solver.prev_solution:
                 print(sol)
+        elif num_args == 1:
+            if user_in[0] == 'c':
+                solver.get_common()
+                print(solver.commons)
         else:
             print("try n sum,")
             print("or q to quit")
