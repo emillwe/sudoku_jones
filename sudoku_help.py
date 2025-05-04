@@ -9,12 +9,14 @@ show all possible solutions
 
 import sys
 from itertools import combinations
+from logging import lastResort
 
 NUM_SUDOKU = 9
 SUDOKU_SET = set(range(1, NUM_SUDOKU + 1))
 
 class SumSolver():
     def __init__(self):
+        self.last_solution = list()
         self.solver = dict()  # {N: {sum: [options]}}
 
        # loop through all possible n
@@ -31,7 +33,15 @@ class SumSolver():
 
     # give a list of tuples of all combinations
     def solve(self, n: int, group_sum):
-        return self.solver[n][group_sum]
+        self.last_solution = self.solver[n][group_sum]
+        return self.last_solution
+
+    def filter_solution(self, to_remove: int):
+        if not self.last_solution:
+           print("no solutions yet: please solve before filtering")
+        for sol in self.last_solution:
+            if to_remove in sol:
+                self.last_solution.remove(sol)
 
 def main():
     # print startup
@@ -41,7 +51,7 @@ def main():
 
     solver = SumSolver()
     print("solver ready")
-
+    # TODO: refactor -- func to handle user input
     while True:
         print("n sum")
         user_in = input()
@@ -52,9 +62,12 @@ def main():
         user_in = user_in.split()
         num_args = len(user_in)
         if num_args == 2:
-            result = solver.solve(int(user_in[0]), int(user_in[1]))
-            for res in result:
-                print(res)
+            if user_in[0] == 'r':
+                solver.filter_solution(int(user_in[1]))
+            else:
+                solver.solve(int(user_in[0]), int(user_in[1]))
+            for sol in solver.last_solution:
+                print(sol)
         else:
             print("try n sum,")
             print("or q to quit")
