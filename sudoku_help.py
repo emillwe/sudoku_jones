@@ -37,6 +37,7 @@ class SumSolver():
         self.prev_solution = self.solver[n][group_sum]
         return self.prev_solution
 
+    # remove all options containing a given int
     def filter_solution(self, to_remove: int):
         if not self.prev_solution:
             print("no solutions yet: please solve before filtering")
@@ -44,6 +45,18 @@ class SumSolver():
         for sol in self.prev_solution:
             if to_remove in sol:
                 self.prev_solution.remove(sol)
+        return self.prev_solution
+
+    def winnow(self, to_remove: int):
+        if not self.prev_solution:
+            print("no solutions yet: please solve before filtering")
+            return list()
+
+        n = len(self.prev_solution[0])
+        s = sum(self.prev_solution[0])
+        s -= to_remove
+        self.solve(n, s)
+        self.filter_solution(to_remove)
         return self.prev_solution
 
     def get_common(self):
@@ -56,7 +69,6 @@ class SumSolver():
         # first = set(self.prev_solution[0])
         # self.commons = first.intersection([set(sol) for sol in self.prev_solution[1:]])
         self.commons = set.intersection(*[set(sol) for sol in self.prev_solution])
-
         return self.commons
 
 def main():
@@ -78,8 +90,10 @@ def main():
         user_in = user_in.split()
         num_args = len(user_in)
         if num_args == 2:
-            if user_in[0] == 'r':
+            if user_in[0] == 'f':
                 solver.filter_solution(int(user_in[1]))
+            elif user_in[0] == 'w':
+                solver.winnow(int(user_in[1]))
             else:
                 solver.solve(int(user_in[0]), int(user_in[1]))
             for sol in solver.prev_solution:
