@@ -34,11 +34,14 @@ class SumSolver():
 
     # give a list of tuples of all combinations
     def solve(self, n: int, group_sum: int):
-        self.prev_solution = self.solver[n][group_sum]
-        return self.prev_solution
-
+        try:
+            self.prev_solution = self.solver[n][group_sum]
+            return self.prev_solution
+        except KeyError as e:
+            print("invalid n/sum. try again")
+    
     # remove all options containing a given int
-    def filter_solution(self, to_remove: int):
+    def filter(self, to_remove: int):
         if not self.prev_solution:
             print("no solutions yet: please solve before filtering")
             return list()
@@ -47,16 +50,36 @@ class SumSolver():
                 self.prev_solution.remove(sol)
         return self.prev_solution
 
+    # keep only solutions containing a given int
+    def keep(self, to_keep: int):
+        if not self.prev_solution:
+            print("no solutions yet: please solve before keeping")
+            return list()
+        kept = [sol for sol in self.prev_solution if to_keep in sol]
+        if not kept:
+            print(f"{to_keep} not found in solutions: try again")
+            return self.prev_solution
+        self.prev_solution = kept
+        return self.prev_solution
+
+    # update solution with a given int
     def winnow(self, to_remove: int):
         if not self.prev_solution:
             print("no solutions yet: please solve before filtering")
             return list()
 
-        n = len(self.prev_solution[0])
-        s = sum(self.prev_solution[0])
-        s -= to_remove
+        can_winnow = False
+        for sol in self.prev_solution:
+            if to_remove in sol:
+                can_winnow = True
+        if not can_winnow:
+            print(f"can't winnow by {to_remove}")
+            return self.prev_solution
+
+        n = len(self.prev_solution[0]) - 1
+        s = sum(self.prev_solution[0]) - to_remove
         self.solve(n, s)
-        self.filter_solution(to_remove)
+        self.filter(to_remove)
         return self.prev_solution
 
     def get_common(self):
@@ -91,11 +114,14 @@ def main():
         num_args = len(user_in)
         if num_args == 2:
             if user_in[0] == 'f':
-                solver.filter_solution(int(user_in[1]))
+                solver.filter(int(user_in[1]))
             elif user_in[0] == 'w':
                 solver.winnow(int(user_in[1]))
+            elif user_in[0] == 'k':
+                solver.keep(int(user_in[1]))
             else:
                 solver.solve(int(user_in[0]), int(user_in[1]))
+
             for sol in solver.prev_solution:
                 print(sol)
         elif num_args == 1:
